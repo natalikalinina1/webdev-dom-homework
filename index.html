@@ -58,8 +58,10 @@
     nameinputElement.addEventListener('input', () => {
   if (nameinputElement.value.length > 0) {
         buttonElement.disabled = false;
-          buttonElement.classList.remove('disabled');
-  } else {
+          button.classList.remove('disabled');
+  } else 0
+  
+   {
         buttonElement.disabled = true;
           buttonElement.classList.add('disabled')
   }
@@ -195,8 +197,9 @@ const renderComment = () => {
           </div>
           <div class="comment-body">
             <div class="comment-text" >
-              ${comment.text}
+              ${comment.text.replaceAll("QUOTE_BEGIN", "<div class='quote'>").replaceAll(" QUOTE_END","</div>")}
             </div>
+           
           </div>
           <div class="comment-footer">
             <div class="likes">
@@ -206,7 +209,8 @@ const renderComment = () => {
             </div>
           </div>
           <button data-index="${index}" class = "edit-button" type ="button"> Редактировать </button>
-        </li>`
+          
+        </li> `
   }) 
   .join("");
   listElement.innerHTML = commentsHTML;
@@ -222,11 +226,12 @@ const commentTexts = document.querySelectorAll('.comment-text');
   text.addEventListener('click', (event) => {
     const index = event.target.parentNode.parentNode.querySelector('.like-button').dataset.index;//parentNode вызывыется дважды, чтобы получить родительский элемент(все комментарии)
     const authorName = event.target.parentNode.parentNode.querySelector('.comment-header > div:first-child').textContent;
-    const commentText = event.target.textContent;
-
-    document.getElementById('name-input').value = " "; 
-    document.getElementById('comm-input').value = ">"+ commentText.replace(/\n/g,'') + "\n"+authorName + "\n" ; 
+    const commentText = event.target.textContent.trim();
+    
+   document.getElementById('name-input').value = " "; 
+    document.getElementById('comm-input').value = `[QUOTE_BEGIN] ${authorName} - ${commentText}[QUOTE_END]\n\n ` ; 
     event.stopPropagation();
+    
   });
 
 }
@@ -263,7 +268,9 @@ comments.push(
         .replaceAll(">","&gt;"),
         text: comminputElement.value
         .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;"),
+        .replaceAll(">","&gt;")
+        .replaceAll('[QUOTE_BEGIN]', "<div class='quote'>")
+        .replaceAll('[QUOTE_END]','</div>'),
         date: `${formattedDate}`,
         likes: 0,
         isEdit: false,
@@ -278,8 +285,9 @@ nameinputElement.value = ""; comminputElement.value = "";
 
 buttonElement.addEventListener('click',() => {
   newComment();
-
+  
 });
+
 
 
   </script>

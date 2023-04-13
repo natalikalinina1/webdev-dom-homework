@@ -164,3 +164,11 @@ body {
     border-radius: 12px;
     cursor: pointer;
   }
+.quote{
+ background: #fff;
+ color: black;
+ padding: 17px;
+ border-radius: 20px;
+ margin-bottom: 20px;
+ font-size: 15px; 
+}
