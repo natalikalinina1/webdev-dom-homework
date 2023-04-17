@@ -37,6 +37,9 @@
 
   </body>
   <style>
+    .add-form-text {
+      white-space: pre-line;
+    }
     .disabled{
       background-color: gray;
     }
@@ -55,8 +58,10 @@
     nameinputElement.addEventListener('input', () => {
   if (nameinputElement.value.length > 0) {
         buttonElement.disabled = false;
-          buttonElement.classList.remove('disabled');
-  } else {
+          button.classList.remove('disabled');
+  } else 0
+  
+   {
         buttonElement.disabled = true;
           buttonElement.classList.add('disabled')
   }
@@ -173,7 +178,7 @@ const renderComment = () => {
             <div>${comment.date}</div>
           </div>
           <div class="comment-body">
-            <textarea id="${index}0" class="edit-text" type="textarea"> </textarea>
+            <textarea id="${index}0" class="input-text" type="textarea"> </textarea>
             </div>
           <div class="comment-footer">
             <div class="likes">
@@ -191,9 +196,10 @@ const renderComment = () => {
             <div>${comment.date}</div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">
-              ${comment.text}
+            <div class="comment-text" >
+              ${comment.text.replaceAll("QUOTE_BEGIN", "<div class='quote'>").replaceAll(" QUOTE_END","</div>")}
             </div>
+           
           </div>
           <div class="comment-footer">
             <div class="likes">
@@ -203,13 +209,36 @@ const renderComment = () => {
             </div>
           </div>
           <button data-index="${index}" class = "edit-button" type ="button"> Редактировать </button>
-        </li>`
+          
+        </li> `
   }) 
   .join("");
   listElement.innerHTML = commentsHTML;
   eventeLikesButtons();
   eventSaveButton();
   eventEditButtons (); 
+
+
+function eventReplyButton() {
+// добавляем обрабочкик клика на текст комментария
+const commentTexts = document.querySelectorAll('.comment-text');
+ for (const text of commentTexts) {
+  text.addEventListener('click', (event) => {
+    const index = event.target.parentNode.parentNode.querySelector('.like-button').dataset.index;//parentNode вызывыется дважды, чтобы получить родительский элемент(все комментарии)
+    const authorName = event.target.parentNode.parentNode.querySelector('.comment-header > div:first-child').textContent;
+    const commentText = event.target.textContent.trim();
+    
+   document.getElementById('name-input').value = " "; 
+    document.getElementById('comm-input').value = `[QUOTE_BEGIN] ${authorName} - ${commentText}[QUOTE_END]\n\n ` ; 
+    event.stopPropagation();
+    
+  });
+
+}
+
+}
+eventReplyButton(); // добавлен вызов
+
 }
 renderComment ();
 
@@ -234,8 +263,14 @@ function newComment() {
 
 comments.push(
 {
-        name:nameinputElement.value ,
-        text: comminputElement.value,
+        name:nameinputElement.value 
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;"),
+        text: comminputElement.value
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('[QUOTE_BEGIN]', "<div class='quote'>")
+        .replaceAll('[QUOTE_END]','</div>'),
         date: `${formattedDate}`,
         likes: 0,
         isEdit: false,
@@ -250,8 +285,9 @@ nameinputElement.value = ""; comminputElement.value = "";
 
 buttonElement.addEventListener('click',() => {
   newComment();
-
+  
 });
+
 
 
   </script>
