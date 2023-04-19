@@ -4,12 +4,12 @@
     <title>Проект "Комменты"</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-
   <body>
     <div class="container">
       <ul class="comments" id="list" >
        <!-- рендерится из js  -->
       </ul>
+     
       <div class="add-form">
         <input 
           type="text"
@@ -51,22 +51,21 @@
     const buttonElement = document.getElementById("add-button"); 
     const listElement = document.getElementById("list");
     const nameinputElement = document.getElementById("name-input");
-    const comminputElement = document.getElementById("comm-input");
-    
-  
-  // Текст на кнопке серый, пока не заполнишь Имя пользователя:
+    const comminputElement = document.getElementById("comm-input"); 
+
+  /* Текст на кнопке серый, пока не заполнишь Имя пользователя:
     nameinputElement.addEventListener('input', () => {
   if (nameinputElement.value.length > 0) {
         buttonElement.disabled = false;
           button.classList.remove('disabled');
   } else 0
-  
    {
         buttonElement.disabled = true;
           buttonElement.classList.add('disabled')
   }
+  renderComment();
 
-});
+})*/
 
  //Кнопка Enter активирует кнопку - Написать
      comminputElement.addEventListener("keyup", function(event) {
@@ -89,18 +88,26 @@
 // Добавляем обработчик события click на кнопку
 deleteButtonElement.addEventListener('click', deleteLastComment);  
  
-//ДЗ 2.10: 
-
    const likesButtons= document.querySelectorAll('.like-button');
    const inputText = document.querySelectorAll('.input-text');
    const editButtons = document.querySelectorAll('.edit-button');
    const saveButtons = document.querySelectorAll('.save-button');
   
+   const fetchPromise = fetch('https://webdev-hw-api.vercel.app/api/v1/natali_kalinina/comments',{
+method:"GET" });
 
-// Создаем массив комментариев, теперь комментарии здесь:
-   const comments = [
+fetchPromise.then((response)=>{
+  const jsonPromise = response.json();
+  jsonPromise.then((responseData) => {
+    //console.log(responseData );
+    comments = responseData.comments;
+   renderComment();
+  }); 
+})
+//Создаем массив комментариев, теперь комментарии здесь:
+   let comments = [
     {
-       name: 'Глеб Фокин',
+        name: 'Глеб Фокин',
         text: 'Это будет первый комментарий на этой странице',
         date: '12.02.22 12:18',
         clickOn: false,
@@ -118,7 +125,6 @@ deleteButtonElement.addEventListener('click', deleteLastComment);
     }
     
 ];
-
 //Добавление лайков :
 const eventeLikesButtons = () => {
     const likesButtons = document.querySelectorAll('.like-button')
@@ -134,14 +140,12 @@ const eventeLikesButtons = () => {
               comments[index].clickOn = false;
                 comments[index].active =''; 
                 comments[index].likes -= 1;
-
             }
-        
+      
             renderComment();
           })
         }
       }
-
       // Добавляем редактирование комментария:
 const eventEditButtons = () => {
 const editButtons = document.querySelectorAll('.edit-button');
@@ -153,7 +157,6 @@ for (const editButton of editButtons){
   })
 }
 }
-
 //  Сохранение отредактированного коментария:
 const eventSaveButton = () => {
   const saveButtons = document.querySelectorAll('.save-button');
@@ -167,7 +170,6 @@ const eventSaveButton = () => {
     })
   }
 }
-
 //рендер комментария: 
 const renderComment = () => {
   const commentsHTML = comments.map((comment, index) => {
@@ -209,38 +211,65 @@ const renderComment = () => {
             </div>
           </div>
           <button data-index="${index}" class = "edit-button" type ="button"> Редактировать </button>
-          
-        </li> `
+        </li> `      
   }) 
   .join("");
   listElement.innerHTML = commentsHTML;
   eventeLikesButtons();
   eventSaveButton();
   eventEditButtons (); 
+  eventReplyButton() ;
 
+//начало преоразования 
+/*const renderAllComments = () => {
+  // перед рендером удаляем все комменты которые были, чтобы они не дублировались
+  comments.innerHTML = "";
+
+ /* comments.forEach((comment, index) =>
+    // id не передаю - он поломанный
+    renderComment(
+      index,
+      comment.author.name,
+      comment.text,
+      getDate(new Date(comment.date)),
+      comment.isLiked,
+      comment.likes,
+      comment.isEdit
+    )
+    
+  );
+  
+  /*const appComments = comments.map((comment) => {
+return {
+  name: comment.author.name,
+  date: new Date(comment.date),
+  text: comment.text,
+  likes: comment.likes,
+  isEdit: false
+}
+});
+comments = appComments;
+renderComment();*/
+}
 
 function eventReplyButton() {
 // добавляем обрабочкик клика на текст комментария
-const commentTexts = document.querySelectorAll('.comment-text');
+const commentTexts = document.querySelectorAll('.comment');
  for (const text of commentTexts) {
   text.addEventListener('click', (event) => {
     const index = event.target.parentNode.parentNode.querySelector('.like-button').dataset.index;//parentNode вызывыется дважды, чтобы получить родительский элемент(все комментарии)
-    const authorName = event.target.parentNode.parentNode.querySelector('.comment-header > div:first-child').textContent;
+    const authorpName = event.target.parentNode.parentNode.querySelector('.comment-header > div:first-child').textContent;
     const commentText = event.target.textContent.trim();
-    
+   
    document.getElementById('name-input').value = " "; 
-    document.getElementById('comm-input').value = `[QUOTE_BEGIN] ${authorName} - ${commentText}[QUOTE_END]\n\n ` ; 
+    document.getElementById('comm-input').value = `[QUOTE_BEGIN] ${authorpName} - ${commentText}[QUOTE_END]\n\n ` ; 
     event.stopPropagation();
-    
+
   });
-
 }
-
 }
 eventReplyButton(); // добавлен вызов
 
-}
-renderComment ();
 
 function newComment() {
   nameinputElement.classList.remove('error')
@@ -261,7 +290,8 @@ function newComment() {
   let minute = now.getMinutes().toString().padStart(2, '0');
   let formattedDate = `${day}.${month}.${year} ${hour}:${minute}`;
 
-comments.push(
+/*Можно удалить 
+  comments.push(
 {
         name:nameinputElement.value 
         .replaceAll("<","&lt;")
@@ -276,13 +306,29 @@ comments.push(
         isEdit: false,
         clickOn: false,		
 }
-)
-
+)*/
+const fetchPromise =fetch('https://webdev-hw-api.vercel.app/api/v1/natali_kalinina/comments',{
+method:"POST",
+body:JSON.stringify({
+  name: nameinputElement.value.replaceAll("<","&lt;").replaceAll(">","&gt;"),
+  text: comminputElement.value
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('[QUOTE_BEGIN]', "<div class='quote'>")
+        .replaceAll('[QUOTE_END]','</div>'),
+}),
+ });
+fetchPromise.then((response)=>{
+  const jsonPromise = response.json();
+  jsonPromise.then((responseData) => {
+    console.log(responseData ) ;
+    comments = responseData.comments;
+    renderComment();
+  }); 
+});
 renderComment();
 nameinputElement.value = ""; comminputElement.value = "";
-
 }
-
 buttonElement.addEventListener('click',() => {
   newComment();
   
