@@ -153,6 +153,7 @@ body {
     border: none;
     border-radius: 12px;
     cursor: pointer;
+    margin-right: 360px;
   }
 
   .save-button{
@@ -163,7 +164,9 @@ body {
     border: none;
     border-radius: 12px;
     cursor: pointer;
+    margin-right: 360px;
   }
+
 .quote{
  background: #fff;
  color: black;
@@ -171,4 +174,7 @@ body {
  border-radius: 20px;
  margin-bottom: 20px;
  font-size: 15px; 
+}
+.error{
+  background-color: #e74a35;
 }
