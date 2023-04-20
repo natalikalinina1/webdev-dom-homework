@@ -21,7 +21,7 @@ function fetchPromise () {
           timezone: "UTC",
           hour: "numeric",
           minute: "2-digit",
-          
+
         };
         return {
           name:comment.author.name,
@@ -34,7 +34,7 @@ function fetchPromise () {
       });
       comments = appComments;
       renderComments();
-   
+
 
     });
   });
@@ -54,7 +54,7 @@ fetchPromise();
           }
         }
         // Oкно редактирoвания 
-        function editRedact () { 
+        function editRedact() { 
           const areaEditMessageElement = document.querySelectorAll(".textarea");
           for (const item of areaEditMessageElement) {
             item.addEventListener('click', (event) => {
@@ -108,7 +108,9 @@ const renderComments = () => {
   likeButton ();
   eventReplyButton();
   editRedact();
-  eventSaveButton ();
+  eventEditButtons () 
+  eventSaveButton();
+
 }; 
 renderComments();
 
@@ -165,7 +167,7 @@ buttonElement.addEventListener("click", () => {
     timezone: "UTC",
     hour: "numeric",
     minute: "2-digit",
-    
+
   };
   const currentDate = new Date().toLocaleString("ru-RU", time);
 
@@ -184,7 +186,7 @@ buttonElement.addEventListener("click", () => {
     likeCounter: 0,
     likeButton: "",
   });
- 
+
     fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
@@ -198,7 +200,7 @@ buttonElement.addEventListener("click", () => {
 
       }),
     }).then((response) =>{
-      
+
       const jsonPromise = response.json();
       jsonPromise.then((responseData) => {
         const appComments = responseData.comments.map((comment) => {
@@ -209,15 +211,15 @@ buttonElement.addEventListener("click", () => {
             likeCounter: comment.likes,
             likeButton: false,
           };
-          
+
         });
         comments = appComments;
         fetchPromise();
         renderComments();
-       
+
       });
     });
-  
+
   renderComments();
   nameinputElement.value = ""; //очищаем форму 
   comminputElement.value = "";  
