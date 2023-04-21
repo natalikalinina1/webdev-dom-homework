@@ -20,22 +20,23 @@ function fetchPromise() {
   })
   .then((responseData) => {
     const appComments = responseData.comments.map((comment) => {
-      const options = {
+      const time = {
         year: "2-digit",
         month: "numeric",
         day: "numeric",
         timezone: "UTC",
         hour: "numeric",
         minute: "2-digit",
-        second: "2-digit",
       };
       return {
         name:comment.author.name,
-        date: new Date(comment.date).toLocaleString("ru-RU", options),
+        date: new Date(comment.date).toLocaleString("ru-RU", time),
         comment: comment.text, 
         likeCounter: comment.likes,
         likeButton: false,
+        isEdit:false,
       };
+
     });
     comments = appComments;
     renderComments();
@@ -190,6 +191,7 @@ buttonElement.addEventListener("click", () => {
   };
   const currentDate = new Date().toLocaleString("ru-RU", time);
 
+
     fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
@@ -211,7 +213,6 @@ buttonElement.addEventListener("click", () => {
     .then(() => {
       return fetchPromise();//вызываем функцию , сократили код
     })
-
   renderComments();
   nameinputElement.value = ""; //очищает форму 
   comminputElement.value = "";  
