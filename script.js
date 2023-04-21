@@ -20,21 +20,21 @@ function fetchPromise() {
   })
   .then((responseData) => {
     const appComments = responseData.comments.map((comment) => {
-      const options = {
+      const time = {
         year: "2-digit",
         month: "numeric",
         day: "numeric",
         timezone: "UTC",
         hour: "numeric",
         minute: "2-digit",
-        second: "2-digit",
       };
       return {
         name:comment.author.name,
-        date: new Date(comment.date).toLocaleString("ru-RU", options),
+        date: new Date(comment.date).toLocaleString("ru-RU", time),
         comment: comment.text, 
         likeCounter: comment.likes,
         likeButton: false,
+        isEdit:false,
       };
     });
     comments = appComments;
