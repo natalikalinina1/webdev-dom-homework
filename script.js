@@ -200,8 +200,7 @@ buttonElement.addEventListener("click", () => {
         date: currentDate,
         likeCounter: 0,
         likeButton: "",
-
-      }),
+    }),
     })
     .then((response) =>{
       commentLoaderElement.style.display = "none";
