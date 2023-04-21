@@ -190,6 +190,7 @@ buttonElement.addEventListener("click", () => {
   };
   const currentDate = new Date().toLocaleString("ru-RU", time);
 
+
     fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
@@ -210,7 +211,6 @@ buttonElement.addEventListener("click", () => {
     .then(() => {
       return fetchPromise();//вызываем функцию , сократили код
     })
-
   renderComments();
   nameinputElement.value = ""; //очищает форму 
   comminputElement.value = "";  
