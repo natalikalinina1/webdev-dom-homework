@@ -4,43 +4,45 @@ const nameinputElement = document.getElementById("name-input");
 const  comminputElement = document.getElementById("comm-input");
 const saveButtons = document.querySelectorAll('.save-button');
 const editButtons = document.querySelectorAll('.edit-button');
+const startLoaderElement = document.getElementById("start-loader");
+const commentLoaderElement = document.getElementById("comment-loader");
+const InputFormElement = document.getElementById("add");
 
+//Когда идет загрузка из API появляется текст: 
+startLoaderElement.textContent = "Пожалуйста подождите, комментарий загружается..."; 
 
-function fetchPromise () {
-   return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
-    method:"GET",
-  }).then((response) =>{
-
-    const jsonPromise = response.json();
-    jsonPromise.then((responseData) => {
-      const appComments = responseData.comments.map((comment) => {
-        const time = {
-          year: "2-digit",
-          month: "numeric",
-          day: "numeric",
-          timezone: "UTC",
-          hour: "numeric",
-          minute: "2-digit",
-          
-        };
-        return {
-          name:comment.author.name,
-          date: new Date(comment.date).toLocaleString("ru-RU", time),
-          comment: comment.text, 
-          likeCounter: comment.likes,
-          likeButton: false,
-          isEdit:false,
-        };
-      });
-      comments = appComments;
-      renderComments();
-   
-
+function fetchPromise() {
+  return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
+   method:"GET",
+  })
+  .then((response) => {
+    return response.json();
+  })
+  .then((responseData) => {
+    const appComments = responseData.comments.map((comment) => {
+      const options = {
+        year: "2-digit",
+        month: "numeric",
+        day: "numeric",
+        timezone: "UTC",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      };
+      return {
+        name:comment.author.name,
+        date: new Date(comment.date).toLocaleString("ru-RU", options),
+        comment: comment.text, 
+        likeCounter: comment.likes,
+        likeButton: false,
+      };
     });
+    comments = appComments;
+    renderComments();
+    startLoaderElement.style.display = "none"; 
   });
 }
 fetchPromise();
-
         // Добавляем редактирование комментария:
         function eventEditButtons () {
           const buttonEdit = document.querySelectorAll(".edit-button");
@@ -54,7 +56,7 @@ fetchPromise();
           }
         }
         // Oкно редактирoвания 
-        function editRedact () { 
+        function editRedact() { 
           const areaEditMessageElement = document.querySelectorAll(".textarea");
           for (const item of areaEditMessageElement) {
             item.addEventListener('click', (event) => {
@@ -108,7 +110,9 @@ const renderComments = () => {
   likeButton ();
   eventReplyButton();
   editRedact();
-  eventSaveButton ();
+  eventEditButtons () 
+  eventSaveButton();
+
 }; 
 renderComments();
 
@@ -119,25 +123,35 @@ renderComments();
           document.getElementById("add-button").click();
   }
 });
-
-// Добавляем лайки у каждого комментария:
+//У нас пока нет API лайков, поэтому сымитируем запрос в API с помощью функции delay.
+function delay(interval = 300) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, interval);
+  });
+}
+//Добавляем лайки у каждого комментария:
 function likeButton () {
   const likeElements = document.querySelectorAll('.like-button');
   for (const likeElement of likeElements) {
     likeElement.addEventListener("click", (event) => {
-      if (likeElement.classList.contains("-active-like")) {
-        comments[likeElement.dataset.index].likeButton = "";
-        comments[likeElement.dataset.index].likeCounter -= 1;
-      } else {
-        comments[likeElement.dataset.index].likeButton = "-active-like";
-        comments[likeElement.dataset.index].likeCounter++;
-      }
       event.stopPropagation(); //останавливаем всплытие
-      renderComments();
+      likeElement.classList.add("-loading-like");
+      delay(2000).then(() => {
+        if (likeElement.classList.contains("-active-like")) {
+          comments[likeElement.dataset.index].likeButton = "";
+          comments[likeElement.dataset.index].likeCounter -= 1;
+        } else {
+          comments[likeElement.dataset.index].likeButton = "-active-like";
+          comments[likeElement.dataset.index].likeCounter++;
+        }
+        likeElement.classList.remove("-loading-like");
+        renderComments();
+      });  
     });
   }
 };
-
 // Добавление элемента в список по нажатию Enter 
 document.addEventListener("keyup",(event) => {
   if (event.code === "Enter") {
@@ -145,6 +159,13 @@ document.addEventListener("keyup",(event) => {
     buttonElement.click();
   }
 });
+buttonElement.addEventListener("click", () => {
+  //Когда нажимаем "Написать" исчезает поле ввода и появляется строчка:"Комментарий добавляется..." 
+  commentLoaderElement.style.display = "flex";
+  commentLoaderElement.textContent = "Комментарий добавляется...";
+  InputFormElement.style.display = "none";
+
+})
 // Поле имени или текста становится красным , если не заполнить
 buttonElement.addEventListener("click", () => {
   nameinputElement.classList.remove("error");
@@ -165,26 +186,10 @@ buttonElement.addEventListener("click", () => {
     timezone: "UTC",
     hour: "numeric",
     minute: "2-digit",
-    
+
   };
   const currentDate = new Date().toLocaleString("ru-RU", time);
 
-  comments.push ({
-    name: nameinputElement.value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;"),
-    date: currentDate,
-    comment: comminputElement.value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;"),
-    likeCounter: 0,
-    likeButton: "",
-  });
- 
     fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
@@ -197,32 +202,20 @@ buttonElement.addEventListener("click", () => {
         likeButton: "",
 
       }),
-    }).then((response) =>{
-      
-      const jsonPromise = response.json();
-      jsonPromise.then((responseData) => {
-        const appComments = responseData.comments.map((comment) => {
-          return {
-            name:comment.author.name,
-            date: new Date(comment.date).toLocaleString("ru-RU", time),
-            comment: comment.text, 
-            likeCounter: comment.likes,
-            likeButton: false,
-          };
-          
-        });
-        comments = appComments;
-        fetchPromise();
-        renderComments();
-       
-      });
-    });
-  
+    })
+    .then((response) =>{
+      commentLoaderElement.style.display = "none";
+      InputFormElement.style.display = "flex";
+      return response.json();
+    })
+    .then(() => {
+      return fetchPromise();//вызываем функцию , сократили код
+    })
+
   renderComments();
-  nameinputElement.value = ""; //очищаем форму 
+  nameinputElement.value = ""; //очищает форму 
   comminputElement.value = "";  
 });  
-
 
 //Удаление последнего комментария с помощью кнопки Удалить посл.комм.
 const deleteButtonElement = document.getElementById('delete-button');
@@ -247,3 +240,8 @@ function eventReplyButton(){
    }); 
  }
 };
+
+ 
+
+
+
