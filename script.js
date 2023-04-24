@@ -202,7 +202,7 @@ buttonElement.addEventListener("click", () => {
         likeButton: "",
     }),
     })
- 
+   
     .then(() => {
       commentLoaderElement.style.display = "none";
       inputFormElement.style.display = "flex";
