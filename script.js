@@ -6,7 +6,7 @@ const saveButtons = document.querySelectorAll('.save-button');
 const editButtons = document.querySelectorAll('.edit-button');
 const startLoaderElement = document.getElementById("start-loader");
 const commentLoaderElement = document.getElementById("comment-loader");
-const InputFormElement = document.getElementById("add");
+const inputFormElement = document.getElementById("add");
 
 //Когда идет загрузка из API появляется текст: 
 startLoaderElement.textContent = "Пожалуйста подождите, комментарий загружается..."; 
@@ -141,7 +141,7 @@ function likeButton () {
       delay(2000).then(() => {
         if (likeElement.classList.contains("-active-like")) {
           comments[likeElement.dataset.index].likeButton = "";
-          comments[likeElement.dataset.index].likeCounter -= 1;
+          comments[likeElement.dataset.index].likeCounter --;
         } else {
           comments[likeElement.dataset.index].likeButton = "-active-like";
           comments[likeElement.dataset.index].likeCounter++;
@@ -163,7 +163,7 @@ buttonElement.addEventListener("click", () => {
   //Когда нажимаем "Написать" исчезает поле ввода и появляется строчка:"Комментарий добавляется..." 
   commentLoaderElement.style.display = "flex";
   commentLoaderElement.textContent = "Комментарий добавляется...";
-  InputFormElement.style.display = "none";
+  inputFormElement.style.display = "none";
 
 })
 // Поле имени или текста становится красным , если не заполнить
@@ -202,12 +202,14 @@ buttonElement.addEventListener("click", () => {
         likeButton: "",
     }),
     })
-    .then((response) =>{
+    /*.then((response) =>{
       commentLoaderElement.style.display = "none";
-      InputFormElement.style.display = "flex";
+      inputFormElement.style.display = "flex";
       return response.json();
-    })
+    })*/
     .then(() => {
+      commentLoaderElement.style.display = "none";
+      inputFormElement.style.display = "flex";
       return fetchPromise();//вызываем функцию , сократили код
     })
   renderComments();
