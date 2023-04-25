@@ -200,19 +200,47 @@ buttonElement.addEventListener("click", () => {
         date: currentDate,
         likeCounter: 0,
         likeButton: "",
+        forceError: true, //добавим, чтобы иногда вылезала ошибка 500
     }),
     })
-   
+    .then((response) =>{
+      if (response.status === 201) { 
+        return response.json();  
+      }
+      else if (response.status === 400) {
+        throw new Error ("Имя и комментарий должны быть не короче 3 символов");
+      }
+      else if (response.status === 500) { 
+        throw new Error ("Сервер упал");
+      } 
+      else {
+        throw new Error ("Что-то с интернетом");
+      }
+    })
+    .then(() => {
+      return fetchPromise();
+    })
     .then(() => {
       commentLoaderElement.style.display = "none";
       inputFormElement.style.display = "flex";
-      return fetchPromise();//вызываем функцию , сократили код
+      nameinputElement.value = ""; //очищаем формы
+      comminputElement.value = "";  
     })
-  renderComments();
-  nameinputElement.value = ""; //очищает форму 
-  comminputElement.value = "";  
-});  
-
+    .catch((error) => {
+      if (error.message === "Имя и комментарий должны быть не короче 3 символов") {
+        alert(error.message);
+      }
+      else if (error.message === 'Сервер упал') {
+        buttonElement.click(); 
+      } 
+      else {
+        alert("Что-то с интернетом, попробуйте позже");
+      }
+      console.warn(error);
+      commentLoaderElement.style.display = "none";
+      inputFormElement.style.display = "flex";
+    })
+  });
 //Удаление последнего комментария с помощью кнопки Удалить посл.комм.
 const deleteButtonElement = document.getElementById('delete-button');
     function deleteLastComment() {
@@ -238,6 +266,5 @@ function eventReplyButton(){
 };
 
  
-
 
 
