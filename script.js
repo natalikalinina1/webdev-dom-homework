@@ -1,7 +1,6 @@
 import { getListComments } from "./listComment.js";
 import { renderComments } from "./render.js";
 import { fetchGetApi, fetchPostApi } from "./api.js";
-
 const buttonElement = document.getElementById("add-button");
 const listElement = document.getElementById("list");
 const nameinputElement = document.getElementById("name-input");
@@ -74,7 +73,6 @@ fetchPromise();
           for (const item of areaEditMessageElement) {
             item.addEventListener('click', (event) => {
               event.stopPropagation();
-             fetchPromise ();
             })
           }
         }
@@ -87,17 +85,18 @@ fetchPromise();
             const index = saveBtn.dataset.index;
             saveBtn.addEventListener("click", (event) => {
               event.stopPropagation();  
-              comments[index].isEdit = false;
+              comments[index].isEdit = false; 
               comments[index].comment = inputMessage.value;
               comments[index].text = inputMessage.value;
-
               renderComments(comments, listElement, getListComments);
+              
+           
             })
           }
+          
         }
-            
+        
 let comments = [];
-
 
 /*
 // УДАЛИТЬ 
@@ -248,8 +247,9 @@ comments.push ({
     }),
     })
     */
-    fetchPostApi(comminputElement.value, nameinputElement.value)
 
+    fetchPostApi(comminputElement.value, nameinputElement.value)
+   
     .then((response) =>{
       if (response.status === 201) { 
         return response.json();  
@@ -264,7 +264,7 @@ comments.push ({
         throw new Error ("Что-то с интернетом");
       }
     })
-    .then(() => {
+   .then(() => {
       
       return fetchPromise();
     })

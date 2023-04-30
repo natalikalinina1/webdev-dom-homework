@@ -10,7 +10,7 @@ export function fetchGetApi() {
   
   
   export function fetchPostApi(textValue, nameValue) {
-    fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
+    return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
         text:textValue, 
