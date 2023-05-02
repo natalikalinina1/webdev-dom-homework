@@ -1,9 +1,12 @@
+import { getListComments } from "./listComment.js";
+import { renderComments } from "./render.js";
+import { fetchGetApi, fetchPostApi } from "./api.js";
 const buttonElement = document.getElementById("add-button");
 const listElement = document.getElementById("list");
 const nameinputElement = document.getElementById("name-input");
 const  comminputElement = document.getElementById("comm-input");
-const saveButtons = document.querySelectorAll('.save-button');
-const editButtons = document.querySelectorAll('.edit-button');
+const buttonSave = document.querySelectorAll('.save-button');
+const  buttonEdit = document.querySelectorAll('.edit-button');
 const startLoaderElement = document.getElementById("start-loader");
 const commentLoaderElement = document.getElementById("comment-loader");
 const inputFormElement = document.getElementById("add");
@@ -12,12 +15,15 @@ const inputFormElement = document.getElementById("add");
 startLoaderElement.textContent = "Пожалуйста подождите, комментарий загружается..."; 
 
 function fetchPromise() {
-  return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
+  //УДАЛИТЬ
+ /* return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
    method:"GET",
   })
   .then((response) => {
     return response.json();
-  })
+  })*/
+
+  fetchGetApi()
   .then((responseData) => {
     const appComments = responseData.comments.map((comment) => {
       const time = {
@@ -38,8 +44,14 @@ function fetchPromise() {
       };
     });
     comments = appComments;
-    renderComments();
+   renderComments(comments, listElement, getListComments);
     startLoaderElement.style.display = "none"; 
+    likeButton ();
+  eventReplyButton();
+  eventEditButtons () 
+  editRedact();
+  eventSaveButton();
+
   });
 }
 fetchPromise();
@@ -51,7 +63,8 @@ fetchPromise();
             edBtn.addEventListener("click", (event) =>{
               event.stopPropagation(); // убираем всплытие
               comments[index].isEdit = !comments[index].isEdit;
-              renderComments();
+              renderComments(comments, listElement, getListComments);
+              eventSaveButton();
             })
           }
         }
@@ -64,6 +77,7 @@ fetchPromise();
             })
           }
         }
+        
         // Сохранение отредактированного коментария:
         function eventSaveButton () {
           const buttonSave = document.querySelectorAll(".save-button");
@@ -72,17 +86,22 @@ fetchPromise();
             const index = saveBtn.dataset.index;
             saveBtn.addEventListener("click", (event) => {
               event.stopPropagation();  
-              comments[index].isEdit = false;
+              comments[index].isEdit = false; 
               comments[index].comment = inputMessage.value;
               comments[index].text = inputMessage.value;
-              renderComments();
-            })
+              renderComments(comments, listElement, getListComments);
+              
+           
+            });
           }
+          
         }
-
+        
 let comments = [];
 
-//Рендер Комментариев:
+/*
+// УДАЛИТЬ 
+Рендер Комментариев:
 const renderComments = () => {
   const commentsHtml = comments
   .map((comment, index) => {
@@ -105,17 +124,15 @@ const renderComments = () => {
      </li>`
   })
   .join("");
-
   listElement.innerHTML = commentsHtml;
   likeButton ();
   eventReplyButton();
   editRedact();
   eventEditButtons () 
   eventSaveButton();
-
 }; 
 renderComments();
-
+*/
  //Кнопка Enter активирует кнопку - Написать
  comminputElement.addEventListener("keyup", function(event) {
     if (event.key === 13) {
@@ -147,11 +164,18 @@ function likeButton () {
           comments[likeElement.dataset.index].likeCounter++;
         }
         likeElement.classList.remove("-loading-like");
-        renderComments();
+
+        renderComments(comments, listElement, getListComments);
+        likeButton ();
+        eventReplyButton();
+        eventEditButtons () 
+        editRedact();
+        eventSaveButton();
       });  
     });
   }
 };
+
 // Добавление элемента в список по нажатию Enter 
 document.addEventListener("keyup",(event) => {
   if (event.code === "Enter") {
@@ -190,7 +214,27 @@ buttonElement.addEventListener("click", () => {
   };
   const currentDate = new Date().toLocaleString("ru-RU", time);
 
-    fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
+comments.push ({
+  name: nameinputElement.value
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;"),
+  date: currentDate,
+  comment: comminputElement.value
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;"),
+  likeCounter: 0,
+  likeButton: false,
+  isEdit:false,
+
+});
+
+
+  /*
+    УДАЛИТЬfetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
       method:"POST",
       body: JSON.stringify ({
         text: comminputElement.value.replaceAll("<","&lt;").replaceAll(">","&gt;"),
@@ -203,6 +247,10 @@ buttonElement.addEventListener("click", () => {
         forceError: true, //добавим, чтобы иногда вылезала ошибка 500
     }),
     })
+    */
+
+    fetchPostApi(comminputElement.value, nameinputElement.value)
+   
     .then((response) =>{
       if (response.status === 201) { 
         return response.json();  
@@ -217,14 +265,18 @@ buttonElement.addEventListener("click", () => {
         throw new Error ("Что-то с интернетом");
       }
     })
-    .then(() => {
+   .then(() => {
+      
       return fetchPromise();
     })
     .then(() => {
+  
       commentLoaderElement.style.display = "none";
       inputFormElement.style.display = "flex";
+  
       nameinputElement.value = ""; //очищаем формы
       comminputElement.value = "";  
+      
     })
     .catch((error) => {
       if (error.message === "Имя и комментарий должны быть не короче 3 символов") {
@@ -241,6 +293,7 @@ buttonElement.addEventListener("click", () => {
       inputFormElement.style.display = "flex";
     })
   });
+  
 //Удаление последнего комментария с помощью кнопки Удалить посл.комм.
 const deleteButtonElement = document.getElementById('delete-button');
     function deleteLastComment() {
@@ -256,7 +309,7 @@ const lastCommentElement = listElement.children[listElement.children.length - 1]
 deleteButtonElement.addEventListener('click', deleteLastComment);  
 
 // Цитируем комментарии:
-function eventReplyButton(){
+function eventReplyButton() {
  const commentElements = document.querySelectorAll('.comment');
  for (const commentElement of commentElements) {
    commentElement.addEventListener("click", () => {
@@ -264,7 +317,7 @@ function eventReplyButton(){
    }); 
  }
 };
+eventReplyButton();
 
- 
 
 
