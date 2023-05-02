@@ -64,6 +64,7 @@ fetchPromise();
               event.stopPropagation(); // убираем всплытие
               comments[index].isEdit = !comments[index].isEdit;
               renderComments(comments, listElement, getListComments);
+              eventSaveButton();
             })
           }
         }
@@ -89,9 +90,9 @@ fetchPromise();
               comments[index].comment = inputMessage.value;
               comments[index].text = inputMessage.value;
               renderComments(comments, listElement, getListComments);
-              
+              eventSaveButton();
            
-            })
+            });
           }
           
         }
