@@ -90,7 +90,7 @@ fetchPromise();
               comments[index].comment = inputMessage.value;
               comments[index].text = inputMessage.value;
               renderComments(comments, listElement, getListComments);
-              eventSaveButton();
+              
            
             });
           }
