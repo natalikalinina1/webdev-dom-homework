@@ -1,60 +1,4 @@
-import { getListComments } from "./listComment.js";
-import { renderComments } from "./render.js";
-import { fetchGetApi, fetchPostApi } from "./api.js";
-const buttonElement = document.getElementById("add-button");
-const listElement = document.getElementById("list");
-const nameinputElement = document.getElementById("name-input");
-const  comminputElement = document.getElementById("comm-input");
-const buttonSave = document.querySelectorAll('.save-button');
-const  buttonEdit = document.querySelectorAll('.edit-button');
-const startLoaderElement = document.getElementById("start-loader");
-const commentLoaderElement = document.getElementById("comment-loader");
-const inputFormElement = document.getElementById("add");
-
-//Когда идет загрузка из API появляется текст: 
-startLoaderElement.textContent = "Пожалуйста подождите, комментарий загружается..."; 
-
-function fetchPromise() {
-  //УДАЛИТЬ
- /* return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
-   method:"GET",
-  })
-  .then((response) => {
-    return response.json();
-  })*/
-
-  fetchGetApi()
-  .then((responseData) => {
-    const appComments = responseData.comments.map((comment) => {
-      const time = {
-        year: "2-digit",
-        month: "numeric",
-        day: "numeric",
-        timezone: "UTC",
-        hour: "numeric",
-        minute: "2-digit",
-      };
-      return {
-        name:comment.author.name,
-        date: new Date(comment.date).toLocaleString("ru-RU", time),
-        comment: comment.text, 
-        likeCounter: comment.likes,
-        likeButton: false,
-        isEdit:false,
-      };
-    });
-    comments = appComments;
-   renderComments(comments, listElement, getListComments);
-    startLoaderElement.style.display = "none"; 
-    likeButton ();
-  eventReplyButton();
-  eventEditButtons () 
-  editRedact();
-  eventSaveButton();
-
-  });
-}
-fetchPromise();
+/* НЕ предусмотрено сервером
         // Добавляем редактирование комментария:
         function eventEditButtons () {
           const buttonEdit = document.querySelectorAll(".edit-button");
@@ -96,86 +40,152 @@ fetchPromise();
           }
           
         }
-        
-let comments = [];
 
-/*
-// УДАЛИТЬ 
-Рендер Комментариев:
-const renderComments = () => {
-  const commentsHtml = comments
-  .map((comment, index) => {
-    return  `<li class="comment" data-index ='${index}' >
-      <div class="comment-header">
-         <div>${comment.name}</div>
-         <div>${comment.date}</div>
-         </div>
-         <div class="comment-body">
-         ${comment.isEdit ? `<textarea id="input" class="comment-text textarea" type="texrarea">${comment.comment}</textarea>` : `<div class="comment-text">${comment.comment.replaceAll("»", "<div class='quote'>").replaceAll("©", "</div>")}</div>`}
-         </div>
-         <div class="comment-footer">
-         	${comment.isEdit ? `<button data-index="${index}" class="save-button">Сохранить</button>` : `<button data-index="${index}" class="edit-button">Редактировать</button>`}
-           <div class="likes">
-           <span class="likes-counter">${comment.likeCounter}</span>
-           <button data-index ='${index}'class="like-button ${comment.likeButton}"></button>
-         
-           </div>
-      </div>
-     </li>`
-  })
-  .join("");
-  listElement.innerHTML = commentsHtml;
-  likeButton ();
-  eventReplyButton();
-  editRedact();
-  eventEditButtons () 
-  eventSaveButton();
-}; 
-renderComments();
 */
- //Кнопка Enter активирует кнопку - Написать
- comminputElement.addEventListener("keyup", function(event) {
-    if (event.key === 13) {
-        event.preventDefault();
-          document.getElementById("add-button").click();
-  }
-});
-//У нас пока нет API лайков, поэтому сымитируем запрос в API с помощью функции delay.
-function delay(interval = 300) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, interval);
-  });
-}
-//Добавляем лайки у каждого комментария:
-function likeButton () {
-  const likeElements = document.querySelectorAll('.like-button');
-  for (const likeElement of likeElements) {
-    likeElement.addEventListener("click", (event) => {
-      event.stopPropagation(); //останавливаем всплытие
-      likeElement.classList.add("-loading-like");
-      delay(2000).then(() => {
-        if (likeElement.classList.contains("-active-like")) {
-          comments[likeElement.dataset.index].likeButton = "";
-          comments[likeElement.dataset.index].likeCounter --;
-        } else {
-          comments[likeElement.dataset.index].likeButton = "-active-like";
-          comments[likeElement.dataset.index].likeCounter++;
-        }
-        likeElement.classList.remove("-loading-like");
 
-        renderComments(comments, listElement, getListComments);
-        likeButton ();
-        eventReplyButton();
-        eventEditButtons () 
-        editRedact();
-        eventSaveButton();
-      });  
-    });
-  }
+import { getCommentsList, fetchPostApi } from "./api.js";
+import {getDate, safety, delay, back} from "./time-data-delay.js"
+import { renderLoginComponent} from "./login-component.js";
+
+
+ let token = null;
+ let comments = [];
+ let name;
+
+const fetchRender = () => {
+  return getCommentsList({token})
+    .then((responseData) => {
+      comments = responseData.comments;
+      renderComments();
+    })
 };
+//Рендер комментария
+export const renderComments = () => {
+ const appEl = document.getElementById("app");
 
+if (!token) {
+      renderLoginComponent({
+        comments,
+        appEl,
+        setToken: (newToken) => {
+          token = newToken;
+        },
+        setName: (newName) => {
+          name = newName; 
+        },
+        renderComments,
+      });
+      return;
+    }
+  const commentsHtml =
+  comments.map((user, index) => {
+    return `<li class="comment" data-index ='${index}'>
+    <div class="comment-header">
+     <div>${user.author.name}</div>
+     <div>${getDate(user.date)}</div>
+   </div>
+   <div class="comment-body" data-comments="${index}" >
+     <div class ="comment-text">  <div class="comment-text">${user.text.replaceAll("»", "<div class='quote'>").replaceAll("©", "</div>")}
+   </div>
+   <div class="comment-footer">
+      <div class="likes">
+        <span class="likes-counter">${user.likes}</span>
+        <button  data-index="${index}" class="like-button ${user.isLiked}"></button>
+      </div>
+   </div>
+   </li>`
+  }).join("");
+const appHtml = `
+            <div class="container">
+    <p id="start-loader"></p>
+    <ul id="list" class="comments">
+      ${commentsHtml}
+    </ul>
+    <div>
+   <p id="comment-loader"></p>
+    </div>
+    <div id="add" class="add-form">
+      <input value = "${name}" id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
+      <textarea id="comm-input" type="textarea" class="add-form-text" placeholder="Введите ваш коментарий"
+        rows="4"></textarea>
+      <div class="add-form-row">
+        <button id="add-button" class="add-form-button">Написать</button>
+      </div>
+    </div>
+  </div>`
+  
+  
+  ;
+
+appEl.innerHTML = appHtml;
+
+
+const buttonElement = document.getElementById("add-button");
+const nameinputElement = document.getElementById("name-input");
+const  comminputElement = document.getElementById("comm-input");
+//не предусмотрено сервером  const  buttonSave = document.querySelectorAll('.save-button');
+//не предусмотрено сервером  const  buttonEdit = document.querySelectorAll('.edit-button');
+//const startLoaderElement = document.getElementById("start-loader");
+const commentLoaderElement = document.getElementById("comment-loader");
+const inputFormElement = document.getElementById("add")
+
+
+//Когда нажимаем "Написать" исчезает поле ввода и появляется строчка:"Комментарий добавляется..." 
+  buttonElement.addEventListener("click", () => {
+  commentLoaderElement.style.display = "flex";
+  commentLoaderElement.textContent = "Комментарий добавляется...";
+  inputFormElement.style.display = "none";
+  nameinputElement.classList.remove("error");
+  comminputElement.classList.remove("error");
+
+fetchPostApi({
+      name: safety(nameinputElement.value),
+      text: safety(comminputElement.value),
+      date: new Date(),
+      forceError: true,
+      token,
+    })
+      .then(() => {
+        return fetchRender();
+      })
+      .then(() => {
+        nameinputElement.value = ""; //очищаем формы 
+        comminputElement.value = "";   
+      })
+      .catch((error) => {
+        if (error.message === "Имя и комментарий должны быть не короче 3-x символов") {
+          alert(error.message);
+        }
+        else if (error.message === "Нет авторизации") {
+          alert(error.message);
+        }
+        else if (error.message === "Сервер упал") {
+          buttonElement.click(); // клик на ввод
+        } 
+        else {
+          alert("Что-то с интернетом, попробуйте позже");
+        }
+        
+        console.warn(error);
+        commentLoaderElement.style.display = "none";
+        inputFormElement.style.display = "flex"; 
+      });
+
+renderComments();
+  });
+    // Поле имени или текста становится красным , если не заполнить
+  buttonElement.addEventListener("click", () => {
+    nameinputElement.classList.remove("error");
+    comminputElement.classList.remove("error");
+    if (nameinputElement.value === '') {
+      nameinputElement.classList.add("error");
+    return;
+    }
+     if (comminputElement.value === '') {
+      comminputElement.classList.add("error");
+      return;
+    }
+})
 // Добавление элемента в список по нажатию Enter 
 document.addEventListener("keyup",(event) => {
   if (event.code === "Enter") {
@@ -183,117 +193,32 @@ document.addEventListener("keyup",(event) => {
     buttonElement.click();
   }
 });
-buttonElement.addEventListener("click", () => {
-  //Когда нажимаем "Написать" исчезает поле ввода и появляется строчка:"Комментарий добавляется..." 
-  commentLoaderElement.style.display = "flex";
-  commentLoaderElement.textContent = "Комментарий добавляется...";
-  inputFormElement.style.display = "none";
 
-})
-// Поле имени или текста становится красным , если не заполнить
-buttonElement.addEventListener("click", () => {
-  nameinputElement.classList.remove("error");
-  comminputElement.classList.remove("error");
-  if (nameinputElement.value === '') {
-    nameinputElement.classList.add("error");
-  return;
+////Добавляем лайки у каждого комментария:
+  function likeButton() {
+  
+    const likeElements = document.querySelectorAll('.like-button');
+    for (const likeElement of likeElements) {
+      likeElement.addEventListener('click', ( event) => {
+        event.stopPropagation(); //останавливаем всплытие 
+        likeElement.classList.add('-loading-like')
+        delay(2000).then(()=> {
+          if (!comments[likeElement.dataset.index].isLiked) {
+            comments[likeElement.dataset.index].isLiked = "";
+            comments[likeElement.dataset.index].likes ++;
+          } else {
+            comments[likeElement.dataset.index].isLiked = "-loading-like";
+            comments[likeElement.dataset.index].likes --;
+          }
+            likeElement.classList.remove("-loading-like");
+
+            renderComments();
+        })
+      });
+    }
   }
-   if (comminputElement.value === '') {
-    comminputElement.classList.add("error");
-    return;
-  }
-  //создаем актуальное время :
-   const time = {
-    year: "2-digit",
-    month: "numeric",
-    day: "numeric",
-    timezone: "UTC",
-    hour: "numeric",
-    minute: "2-digit",
 
-  };
-  const currentDate = new Date().toLocaleString("ru-RU", time);
-
-comments.push ({
-  name: nameinputElement.value
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;"),
-  date: currentDate,
-  comment: comminputElement.value
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;"),
-  likeCounter: 0,
-  likeButton: false,
-  isEdit:false,
-
-});
-
-
-  /*
-    УДАЛИТЬfetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
-      method:"POST",
-      body: JSON.stringify ({
-        text: comminputElement.value.replaceAll("<","&lt;").replaceAll(">","&gt;"),
-        name: nameinputElement.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;")
-        .replaceAll('[QUOTE_BEGIN]', "<div class='quote'>")
-        .replaceAll('[QUOTE_END]','</div>'),
-        date: currentDate,
-        likeCounter: 0,
-        likeButton: "",
-        forceError: true, //добавим, чтобы иногда вылезала ошибка 500
-    }),
-    })
-    */
-
-    fetchPostApi(comminputElement.value, nameinputElement.value)
-   
-    .then((response) =>{
-      if (response.status === 201) { 
-        return response.json();  
-      }
-      else if (response.status === 400) {
-        throw new Error ("Имя и комментарий должны быть не короче 3 символов");
-      }
-      else if (response.status === 500) { 
-        throw new Error ("Сервер упал");
-      } 
-      else {
-        throw new Error ("Что-то с интернетом");
-      }
-    })
-   .then(() => {
-      
-      return fetchPromise();
-    })
-    .then(() => {
-  
-      commentLoaderElement.style.display = "none";
-      inputFormElement.style.display = "flex";
-  
-      nameinputElement.value = ""; //очищаем формы
-      comminputElement.value = "";  
-      
-    })
-    .catch((error) => {
-      if (error.message === "Имя и комментарий должны быть не короче 3 символов") {
-        alert(error.message);
-      }
-      else if (error.message === 'Сервер упал') {
-        buttonElement.click(); 
-      } 
-      else {
-        alert("Что-то с интернетом, попробуйте позже");
-      }
-      console.warn(error);
-      commentLoaderElement.style.display = "none";
-      inputFormElement.style.display = "flex";
-    })
-  });
-  
+/*Удаление не предусмотрено
 //Удаление последнего комментария с помощью кнопки Удалить посл.комм.
 const deleteButtonElement = document.getElementById('delete-button');
     function deleteLastComment() {
@@ -307,17 +232,24 @@ const lastCommentElement = listElement.children[listElement.children.length - 1]
 }
 // Добавляем обработчик события click на кнопку
 deleteButtonElement.addEventListener('click', deleteLastComment);  
+*/
 
 // Цитируем комментарии:
 function eventReplyButton() {
- const commentElements = document.querySelectorAll('.comment');
- for (const commentElement of commentElements) {
-   commentElement.addEventListener("click", () => {
-    comminputElement.value = ` » ${comments[commentElement.dataset.index].name}- ${comments[commentElement.dataset.index].comment} \n\n  ©`;
-   }); 
- }
+  const commentElements = document.querySelectorAll('.comment');
+  for (const commentElement of commentElements) {
+    commentElement.addEventListener("click", () => {
+     comminputElement.value = `» ${back(comments[commentElement.dataset.index].author.name)} - ${back(comments[commentElement.dataset.index].text)}© \n\n `;
+    
+    }); 
+  }
+ };
+ eventReplyButton();
+ likeButton();
+
+
+
 };
-eventReplyButton();
 
-
-
+renderComments();
+fetchRender();

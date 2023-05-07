@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    
   }
 
   .container {
@@ -96,8 +97,8 @@ body {
   .add-form {
     padding: 20px;
     margin-top: 48px;
-    display: flex;
     flex-direction: column;
+    
    
   }
 
@@ -108,13 +109,14 @@ body {
     border-radius: 8px;
     border: none;
     display: block;
-    white-space: pre-line
+    white-space: pre-line;
+    width: 500px;
 
   
   }
 
   .add-form-name {
-    width: 300px;
+    width: 500px;
     padding: 11px 22px;
   }
 
@@ -198,4 +200,21 @@ body {
 
 }
 
+.tips-wrap {
 
+  margin-top: 10px;
+  gap: 4px;
+}
+.tips-auth {
+  text-decoration: underline;
+  cursor: pointer;
+ 
+
+}
+.tips-auth:hover, .logout:hover {
+  color: #bcec30;
+}
+.class_form {
+  font-size: 26px;
+  font-weight: normal;
+}
