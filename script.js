@@ -247,8 +247,6 @@ function eventReplyButton() {
  eventReplyButton();
  likeButton();
 
-
-
 };
 
 renderComments();
