@@ -1,21 +1,89 @@
 
-export function fetchGetApi() {
-    return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
-      method:"GET",
-    })
-    .then((response) => {
+const host = "https://webdev-hw-api.vercel.app/api/v2/natalia_kalinina/comments";
+let token = null;
+
+
+export function getCommentsList({ token }) {
+  return fetch(host, {
+    method: "GET",
+    headers: {
+      Authorization: token,
+    },
+  }).then((response) => {
+    if (response.status === 201 || response.status === 200) {
       return response.json();
-    });
-  }
-  
-  
-  export function fetchPostApi(textValue, nameValue) {
-    return fetch('https://webdev-hw-api.vercel.app/api/v1/natalia_kalinina/comments',{
-      method:"POST",
-      body: JSON.stringify ({
-        text:textValue, 
-        name:nameValue, 
-      
+    } else {
+      return Promise.reject("Сервер упал");
+    }
+  });
+}
+
+export function fetchPostApi({ name, text, date, forceError, token }) {
+  return fetch(host, {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      text,
+      date,
+      forceError,
     }),
-    })
-  }
+    headers: {
+      Authorization: token,
+    },
+  }).then((response) => {
+    if (response.status === 201) { 
+      return response.json();  
+    }
+    else if (response.status === 400) {
+      throw new Error ("Имя и комментарий должны быть не короче 3 символов");
+    }
+    else if (response.status === 401) {
+      throw new Error("Нет авторизации");
+    }
+    else if (response.status === 500) { 
+      throw new Error ("Сервер упал");
+    } 
+    else {
+      throw new Error ("Что-то с интернетом");
+    }
+  });
+}
+export function registerUser({ login, password, name }) {
+
+  return fetch('https://webdev-hw-api.vercel.app/api/user', {
+    method: "POST",
+    body: JSON.stringify({
+      login,
+      password,
+      name
+    }),
+  }).then((response) => {
+      if (response.status === 400){
+        throw new Error ("Такой пользователь уже существует")
+      }
+      return response.json()
+  });
+}
+
+export function loginUser({ login, password }) {
+
+  return fetch('https://webdev-hw-api.vercel.app/api/user/login', {
+    method: "POST",
+    body: JSON.stringify({
+      login,
+      password, 
+    }),
+  })
+  .then((response) => {
+      if (response.status === 400){
+        throw new Error ("Неверный логин или пароль")
+      }
+      return response.json()      
+  });
+}
+
+
+
+
+
+  
