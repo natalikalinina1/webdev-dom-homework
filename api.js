@@ -1,6 +1,6 @@
 
-const host = "https://webdev-hw-api.vercel.app/api/v2/natalia_kalinina/comments";
-let token = null;
+const host = "https://webdev-hw-api.vercel.app/api/v2/natalia_kalinin/comments";
+
 
 
 export function getCommentsList({ token }) {
