@@ -1,5 +1,5 @@
 
-const host = "https://webdev-hw-api.vercel.app/api/v2/natalia_kalinin/comments";
+const host = "https://webdev-hw-api.vercel.app/api/v2/natalia_kalinina/comments";
 
 
 
