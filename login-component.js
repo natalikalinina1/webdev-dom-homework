@@ -57,13 +57,14 @@ export function renderLoginComponent({
         </div>`; 
 
     appEl.innerHTML = appHtml;
-     
+
     document.querySelector('.add-form').style.display = 'none';
     document.getElementById("avtoriz").addEventListener("click", () => {
       renderForm();
       document.querySelector('.add-form').style.display = 'flex';
+   
      });
-
+    
     document.getElementById("login-button").addEventListener("click", () => {
 
       if (isLoginMode) {
@@ -90,7 +91,6 @@ export function renderLoginComponent({
           alert(error.message);
         })
         } else {
-
         const name = document.getElementById('name-input').value;
         const login = document.getElementById('login-input').value;
         const password = document.getElementById('password-input').value;
