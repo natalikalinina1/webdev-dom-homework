@@ -1,14 +1,8 @@
+import { format } from "date-fns";
+
 //создаем актуальную дату и время :
 export function getDate(date) {
-    const time = {
-        year: '2-digit',
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    }
-    const newDate = new Date(date);
-    return newDate.toLocaleString('ru-RU', time).replace(',', ''); //  
+    return format(new Date(date), 'yyyy-MM-dd hh.mm.ss')
   }
   //Задержка лайка имитация запроса в API 
   export function delay(interval = 300) {
